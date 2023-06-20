@@ -7,9 +7,18 @@ import android.view.Menu
 import android.view.MenuItem
 import android.widget.Button
 import androidx.appcompat.widget.Toolbar
+import android.Manifest
+import android.app.Activity
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.widget.ImageView
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 
 class FaceRecognitionActivity : AppCompatActivity() {
     //Toolbar as smartcontract
+    val REQUEST_CODE = 200
+    lateinit var logo: ImageView
     private lateinit var toolbar: Toolbar
 
     //onCreatefunction
@@ -28,8 +37,32 @@ class FaceRecognitionActivity : AppCompatActivity() {
             val intent = Intent(this, ProfilActivity::class.java)
             startActivity(intent)
         }
-
+        if (ContextCompat.checkSelfPermission(
+                this@FaceRecognitionActivity,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) !==
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            if (ActivityCompat.shouldShowRequestPermissionRationale(
+                    this@FaceRecognitionActivity,
+                    Manifest.permission.CAMERA
+                )
+            ) {
+                ActivityCompat.requestPermissions(
+                    this@FaceRecognitionActivity,
+                    arrayOf(Manifest.permission.CAMERA), 1
+                )
+            } else {
+                ActivityCompat.requestPermissions(
+                    this@FaceRecognitionActivity,
+                    arrayOf(Manifest.permission.CAMERA), 1
+                )
+            }
+        }
     }
+
+
+
     //creation de dropdown menu qui lance SettingsActivity
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         menuInflater.inflate(R.menu.main_menu, menu)
@@ -43,6 +76,14 @@ class FaceRecognitionActivity : AppCompatActivity() {
                 true
             }
             else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode == Activity.RESULT_OK && requestCode == REQUEST_CODE && data != null){
+            logo = findViewById(R.id.iv)
+            logo.setImageBitmap(data.extras?.get("data") as Bitmap)
         }
     }
 }
