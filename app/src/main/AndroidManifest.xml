@@ -20,25 +20,41 @@
         android:theme="@style/Theme.Smartcontact"
         tools:targetApi="31">
         <activity
-            android:name=".ShowSummaryActivity"
+            android:name=".Kotlin.ShowSummaryActivity"
             android:exported="false" />
         <activity
-            android:name=".ConversationActivity"
+            android:name=".Kotlin.ConversationActivity"
             android:exported="false" />
         <activity
-            android:name=".ProfilActivity"
+            android:name=".Kotlin.ProfilActivity"
             android:exported="false" />
         <activity
-            android:name=".FaceRecognitionActivity"
+            android:name=".Kotlin.FaceRecognitionActivity"
             android:exported="false" />
         <activity
-            android:name=".SettingsActivity"
+            android:name=".Kotlin.SettingsActivity"
             android:exported="false" />
         <activity
-            android:name=".SummariesActivity"
+            android:name=".Kotlin.SummariesActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".Kotlin.MainActivity"
+            android:exported="false">
+        </activity>
+        <activity
+            android:name=".Java.NoteDetailsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Java.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Java.CreateAccountActivity"
+            android:exported="false" />
+        <activity
+            android:name=".Java.ListSummaries"
+            android:exported="false" />
+        <activity
+            android:name=".Java.SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
