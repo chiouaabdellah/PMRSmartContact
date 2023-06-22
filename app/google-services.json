@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "486150295694",
+    "project_id": "summarynotes-eb0ee",
+    "storage_bucket": "summarynotes-eb0ee.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486150295694:android:7b1a2eee1002c1863df9df",
+        "android_client_info": {
+          "package_name": "com.example.smartcontact"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "486150295694-a5qfhqc2rhvdii4kkgtro50hsmqhgu4m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7aS3OilGQFzrTjItPbBwmeJTbxOaYz68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "486150295694-a5qfhqc2rhvdii4kkgtro50hsmqhgu4m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:486150295694:android:9e62ed7b30ccef843df9df",
+        "android_client_info": {
+          "package_name": "easy.tuto.notespro"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "486150295694-a5qfhqc2rhvdii4kkgtro50hsmqhgu4m.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB7aS3OilGQFzrTjItPbBwmeJTbxOaYz68"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "486150295694-a5qfhqc2rhvdii4kkgtro50hsmqhgu4m.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
