@@ -11,6 +11,8 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
+import android.view.SurfaceHolder
+import android.view.SurfaceView
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -20,18 +22,23 @@ import androidx.core.content.ContextCompat
 import com.example.smartcontact.Java.LoginActivity
 import com.example.smartcontact.R
 import com.google.firebase.auth.FirebaseAuth
+import android.hardware.Camera
 
-class FaceRecognitionActivity : AppCompatActivity() {
+
+class   FaceRecognitionActivity : AppCompatActivity() {
     //Toolbar as smartcontract
     val REQUEST_CODE = 200
     lateinit var logo: ImageView
     lateinit var menuBtn: ImageButton
+    private var camera: Camera? = null
+    private var surfaceHolder: SurfaceHolder? = null
 
     //onCreatefunction
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_face_recognition)
-
+        surfaceHolder = (findViewById(R.id.cameraPreview) as SurfaceView).holder
+        surfaceHolder?.addCallback(this)
         menuBtn = findViewById<ImageButton>(R.id.menu_btn)
         menuBtn.setOnClickListener { v: View? -> showMenu() }
 
@@ -95,6 +102,24 @@ class FaceRecognitionActivity : AppCompatActivity() {
             }
         }
     }
+    fun surfaceCreated(holder: SurfaceHolder) {
+        camera = Camera.open()
+        camera?.setDisplayOrientation(90)
+    }
 
+    fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        camera?.setPreviewDisplay(holder)
+        camera?.startPreview()
+    }
+
+    fun surfaceDestroyed(holder: SurfaceHolder) {
+        camera?.stopPreview()
+        camera?.release()
+        camera = null
+    }
+
+}
+
+private fun SurfaceHolder.addCallback(faceRecognitionActivity: FaceRecognitionActivity) {
 
 }
