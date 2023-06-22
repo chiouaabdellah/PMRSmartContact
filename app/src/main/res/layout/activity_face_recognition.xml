@@ -41,23 +41,15 @@
             app:tint="@color/white"
             tools:ignore="TouchTargetSizeCheck" />
     </RelativeLayout>
-
-    <FrameLayout
-        android:id="@+id/cameraPreviewLayout"
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="500dp"
         android:layout_marginTop="64dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <SurfaceView
-            android:id="@+id/cameraPreview"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-
-    </FrameLayout>
+        app:layout_constraintTop_toTopOf="parent" />
 
 
     <Button

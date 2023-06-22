@@ -11,8 +11,6 @@ import android.Manifest
 import android.app.Activity
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
-import android.view.SurfaceHolder
-import android.view.SurfaceView
 import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
@@ -22,23 +20,47 @@ import androidx.core.content.ContextCompat
 import com.example.smartcontact.Java.LoginActivity
 import com.example.smartcontact.R
 import com.google.firebase.auth.FirebaseAuth
-import android.hardware.Camera
-
+import android.widget.Toast
+import androidx.camera.core.CameraSelector
+import androidx.camera.core.ImageCapture
+import androidx.camera.core.ImageCaptureException
+import androidx.camera.core.Preview
+import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.view.PreviewView
+import java.io.File
+import java.text.SimpleDateFormat
+import java.util.*
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
 
 class   FaceRecognitionActivity : AppCompatActivity() {
     //Toolbar as smartcontract
     val REQUEST_CODE = 200
     lateinit var logo: ImageView
     lateinit var menuBtn: ImageButton
-    private var camera: Camera? = null
-    private var surfaceHolder: SurfaceHolder? = null
-
+    private var imageCapture: ImageCapture? = null
+    private lateinit var outputDirectory: File
+    private lateinit var cameraExecutor: ExecutorService
+    lateinit var previewView: PreviewView
+    companion object {
+        private const val REQUEST_CODE_PERMISSIONS = 10
+        private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
+    }
     //onCreatefunction
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_face_recognition)
-        surfaceHolder = (findViewById(R.id.cameraPreview) as SurfaceView).holder
-        surfaceHolder?.addCallback(this)
+        if (allPermissionsGranted()) {
+            startCamera()
+        } else {
+            ActivityCompat.requestPermissions(
+                this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
+            )
+        }
+        outputDirectory = getOutputDirectory()
+        previewView=findViewById(R.id.previewView)
+        cameraExecutor = Executors.newSingleThreadExecutor()
+
         menuBtn = findViewById<ImageButton>(R.id.menu_btn)
         menuBtn.setOnClickListener { v: View? -> showMenu() }
 
@@ -102,24 +124,92 @@ class   FaceRecognitionActivity : AppCompatActivity() {
             }
         }
     }
-    fun surfaceCreated(holder: SurfaceHolder) {
-        camera = Camera.open()
-        camera?.setDisplayOrientation(90)
+    private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
+        ContextCompat.checkSelfPermission(
+            baseContext, it
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+    private fun getOutputDirectory(): File {
+        val mediaDir = externalMediaDirs.firstOrNull()?.let {
+            File(it, resources.getString(R.string.app_name)).apply { mkdirs() }
+        }
+        return if (mediaDir != null && mediaDir.exists())
+            mediaDir else filesDir
+    }
+    private fun startCamera() {
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+
+        cameraProviderFuture.addListener({
+            val cameraProvider: ProcessCameraProvider = cameraProviderFuture.get()
+
+            val preview = Preview.Builder()
+                .build()
+                .also {
+                    it.setSurfaceProvider(previewView.surfaceProvider)
+                }
+
+            imageCapture = ImageCapture.Builder()
+                .build()
+
+            val cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA
+
+            try {
+                cameraProvider.unbindAll()
+                cameraProvider.bindToLifecycle(
+                    this, cameraSelector, preview, imageCapture
+                )
+            } catch (exc: Exception) {
+                Toast.makeText(this, "Camera initialization failed", Toast.LENGTH_SHORT).show()
+            }
+        }, ContextCompat.getMainExecutor(this))
+    }
+    private fun takePhoto() {
+        val imageCapture = imageCapture ?: return
+
+        val photoFile = File(
+            outputDirectory,
+            SimpleDateFormat(
+                "yyyy-MM-dd-HH-mm-ss-SSS", Locale.getDefault()
+            ).format(System.currentTimeMillis()) + ".jpg"
+        )
+
+        val outputOptions = ImageCapture.OutputFileOptions.Builder(photoFile).build()
+
+        imageCapture.takePicture(
+            outputOptions, ContextCompat.getMainExecutor(this), object : ImageCapture.OnImageSavedCallback {
+                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                    Toast.makeText(applicationContext, "Photo saved successfully", Toast.LENGTH_SHORT).show()
+                }
+
+                override fun onError(exception: ImageCaptureException) {
+                    Toast.makeText(applicationContext, "Failed to save photo", Toast.LENGTH_SHORT).show()
+                }
+            }
+        )
+    }
+    override fun onRequestPermissionsResult(
+        requestCode: Int, permissions: Array<String>, grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_CODE_PERMISSIONS) {
+            if (allPermissionsGranted()) {
+                startCamera()
+            } else {
+                Toast.makeText(
+                    this,
+                    "Permissions not granted by the user.",
+                    Toast.LENGTH_SHORT
+                ).show()
+                finish()
+            }
+        }
     }
 
-    fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        camera?.setPreviewDisplay(holder)
-        camera?.startPreview()
+    override fun onDestroy() {
+        super.onDestroy()
+        cameraExecutor.shutdown()
     }
 
-    fun surfaceDestroyed(holder: SurfaceHolder) {
-        camera?.stopPreview()
-        camera?.release()
-        camera = null
-    }
 
-}
-
-private fun SurfaceHolder.addCallback(faceRecognitionActivity: FaceRecognitionActivity) {
 
 }
