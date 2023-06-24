@@ -1,38 +1,37 @@
 package com.example.smartcontact.Kotlin
 
-import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
-import android.os.Bundle
-import android.view.Menu
-import android.view.MenuItem
-import android.widget.Button
-import android.widget.TextView
-import androidx.appcompat.widget.Toolbar
-import android.os.Build
-import android.speech.RecognitionListener
-import android.speech.RecognizerIntent
-import android.speech.SpeechRecognizer
-import android.widget.Toast
-import androidx.core.content.ContextCompat
-
-
-import android.content.pm.PackageManager
-import android.net.Uri
-import android.provider.Settings
-import android.view.View
-import android.widget.AdapterView
-import android.widget.ArrayAdapter
-import android.widget.ImageButton
-import android.widget.Spinner
-import androidx.appcompat.widget.PopupMenu
-import com.example.smartcontact.Java.ListSummaries
-import com.example.smartcontact.Java.LoginActivity
-import com.example.smartcontact.R
-import com.google.firebase.auth.FirebaseAuth
-
 
 //importation des packages de traduction
 
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
+import android.os.Build
+import android.os.Bundle
+import android.provider.Settings
+import android.speech.RecognitionListener
+import android.speech.RecognizerIntent
+import android.speech.SpeechRecognizer
+import android.view.View
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.ImageButton
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.PopupMenu
+import androidx.core.content.ContextCompat
+import com.example.smartcontact.Java.ListSummaries
+import com.example.smartcontact.Java.LoginActivity
+import com.example.smartcontact.Java.Note
+import com.example.smartcontact.Java.Utility
+import com.example.smartcontact.R
+import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.mlkit.common.model.DownloadConditions
 import com.google.mlkit.nl.translate.TranslateLanguage
 import com.google.mlkit.nl.translate.Translation
@@ -51,6 +50,11 @@ class ConversationActivity : AppCompatActivity() {
     private var translator : Translator?= null
     private var resultText = ""
     lateinit var menuBtn: ImageButton
+
+    var title: String? = null
+    var content:kotlin.String? = null
+    var docId:kotlin.String? = null
+    var isEditMode = false
 
     //onCreatefunction
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -115,18 +119,93 @@ class ConversationActivity : AppCompatActivity() {
             btn_button.text = if (recording) "Stop Translation" else "Start Translation"
         }
 
+
+        //receive data
+        title = "Presenter"
+        content = findViewById<TextView>(R.id.tv_text).text.toString()
+        docId = intent.getStringExtra("docId")
+
+        if (docId != null && !docId!!.isEmpty()) {
+            isEditMode = true
+        }
+
         //Creation de button end conversation
         val button_endconversation = findViewById<Button>(R.id.button_EndConversation)
         button_endconversation.setOnClickListener {
+
+
+            title = "Presenter"
+            content = findViewById<TextView>(R.id.tv_text).text.toString()
+            //content   = Text2Summary.summarize( content_ , compressionRate = 0.3F)
+            docId = intent.getStringExtra("docId")
             //Implementer la partie envoi de conversation
+            saveNote()
 
 
-            // cette partie va
             val intent = Intent(this, ListSummaries::class.java)
             startActivity(intent)
+
         }
 
     }
+
+    fun saveNote() {
+        val noteTitle: String = title.toString()
+        val noteContent: String = content.toString()
+        if (noteTitle == null || noteTitle.isEmpty()) {
+            return
+        }
+        val note = Note()
+        note.title = noteTitle
+        note.content = noteContent
+        note.timestamp = Timestamp.now()
+        saveNoteToFirebase(note)
+    }
+
+    fun saveNoteToFirebase(note: Note?) {
+
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val collection =  FirebaseFirestore.getInstance().collection("notes")
+            .document(currentUser!!.uid).collection("my_notes")
+
+
+        val documentReference: DocumentReference
+        documentReference = collection.document(docId.toString())
+
+        documentReference.set(note!!).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                //note is added
+                Toast.makeText(this, "Note Added succesfully", Toast.LENGTH_SHORT).show()
+            }
+
+
+        }
+    }
+
+    /*
+        fun saveNoteToFirebase(note: Note?) {
+
+            val currentUser = FirebaseAuth.getInstance().currentUser
+            val collection =  FirebaseFirestore.getInstance().collection("notes")
+                .document(currentUser!!.uid).collection("my_notes")
+            val documentReference: DocumentReference
+            documentReference = collection.document(docId.toString())
+
+            documentReference.set(note!!).addOnCompleteListener { task ->
+                if (task.isSuccessful) {
+                    //note is added
+                    Toast.makeText(this, "Note Added succesfully", Toast.LENGTH_SHORT).show()
+                }
+
+
+            }
+        }
+
+     */
+
+
+
     //creation de dropdown menu qui lance SettingsActivity
 
 
