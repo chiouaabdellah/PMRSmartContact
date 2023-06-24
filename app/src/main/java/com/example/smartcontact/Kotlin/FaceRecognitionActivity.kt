@@ -28,6 +28,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
 import androidx.room.jarjarred.org.stringtemplate.v4.Interpreter
+import org.opencv.android.OpenCVLoader
 import java.io.File
 import java.io.FileInputStream
 import java.nio.ByteBuffer
