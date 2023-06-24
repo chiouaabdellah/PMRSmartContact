@@ -8,13 +8,31 @@ import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.ImageButton
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
+import android.widget.Toast
 import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.Toolbar
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.android.volley.Request
+import com.android.volley.Response
+import com.android.volley.toolbox.JsonObjectRequest
+import com.android.volley.toolbox.Volley
 import com.example.smartcontact.Java.LoginActivity
 import com.example.smartcontact.R
 import com.google.firebase.auth.FirebaseAuth
 
 class ProfilActivity : AppCompatActivity() {
+
+    lateinit var readProgressLayout: RelativeLayout
+    lateinit var readProgressBar: ProgressBar
+    lateinit var recyclerView: RecyclerView
+    lateinit var layoutManager: LinearLayoutManager
+    lateinit var recyclerAdapter: ReadRecyclerAdapter
+
+    // il faut adapter cette partie avec le ID reconnue avec faceRecognition
+    private val id = "ID1" // Replace "123" with the desired ID
 
     lateinit var menuBtn: ImageButton
     //onCreatefunction
@@ -30,13 +48,56 @@ class ProfilActivity : AppCompatActivity() {
         button_startconversation.setOnClickListener {
             //Implementer la partie de traduction
 
-
-
-
             // cette partie va
             val intent = Intent(this, ConversationActivity::class.java)
             startActivity(intent)
         }
+
+        //cette partie permet l'affichage de profil avec des requettes Volley :
+        readProgressLayout = findViewById(R.id.readProgressLayout)
+        readProgressBar = findViewById(R.id.readProgressBar)
+        recyclerView = findViewById(R.id.recyclerView)
+        layoutManager = LinearLayoutManager(this)
+
+        val profilList = arrayListOf<Profil>()
+
+        val queue = Volley.newRequestQueue(this)
+        val url = "https://script.google.com/macros/s/AKfycbw0OZxbOYmeILhlXo1jNCONbD3kav7T8gOsGh6ZnJNCCS9DnU0bvKXaeoIXu9GaJ6Vq/exec"
+        val jsonObjectRequest = object : JsonObjectRequest(
+            Request.Method.GET, url, null,
+            Response.Listener {
+                readProgressLayout.visibility = View.GONE
+                readProgressBar.visibility = View.GONE
+                val data = it.getJSONArray("profilList")
+                for (i in 0 until data.length()) {
+                    val profilJasonObject = data.getJSONObject(i)
+                    val profileId = profilJasonObject.getString("ID")
+                    if (profileId == id) {
+                        val profilObject = Profil(
+                            profileId,
+                            profilJasonObject.getString("fullName"),
+                            profilJasonObject.getString("Competence"),
+                            profilJasonObject.getString("Company"),
+                            profilJasonObject.getString("Position"),
+                            profilJasonObject.getString("Experience")
+                        )
+                        profilList.add(profilObject)
+                    }
+                }
+                recyclerAdapter = ReadRecyclerAdapter(this, profilList)
+                recyclerView.adapter = recyclerAdapter
+                recyclerView.layoutManager = layoutManager
+            }, Response.ErrorListener {
+                readProgressLayout.visibility = View.GONE
+                readProgressBar.visibility = View.GONE
+                Toast.makeText(this@ProfilActivity, it.toString(), Toast.LENGTH_SHORT).show()
+            }
+        ) {
+            override fun getHeaders(): MutableMap<String, String> {
+                return super.getHeaders()
+            }
+        }
+        queue.add(jsonObjectRequest)
 
     }
     fun showMenu() {
@@ -60,9 +121,5 @@ class ProfilActivity : AppCompatActivity() {
             }
         }
     }
-
-
-
-
 
 }
