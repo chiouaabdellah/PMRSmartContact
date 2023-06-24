@@ -27,7 +27,11 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
+import androidx.room.jarjarred.org.stringtemplate.v4.Interpreter
 import java.io.File
+import java.io.FileInputStream
+import java.nio.ByteBuffer
+import java.nio.channels.FileChannel
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.ExecutorService
@@ -42,6 +46,7 @@ class   FaceRecognitionActivity : AppCompatActivity() {
     private lateinit var outputDirectory: File
     private lateinit var cameraExecutor: ExecutorService
     lateinit var previewView: PreviewView
+
     companion object {
         private const val REQUEST_CODE_PERMISSIONS = 10
         private val REQUIRED_PERMISSIONS = arrayOf(Manifest.permission.CAMERA)
@@ -50,6 +55,7 @@ class   FaceRecognitionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_face_recognition)
+        OpenCVLoader.initDebug()
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -57,6 +63,7 @@ class   FaceRecognitionActivity : AppCompatActivity() {
                 this, REQUIRED_PERMISSIONS, REQUEST_CODE_PERMISSIONS
             )
         }
+
         outputDirectory = getOutputDirectory()
         previewView=findViewById(R.id.previewView)
         cameraExecutor = Executors.newSingleThreadExecutor()
@@ -124,6 +131,52 @@ class   FaceRecognitionActivity : AppCompatActivity() {
             }
         }
     }
+    private fun loadModelFile(): ByteBuffer {
+        val fileDescriptor = assets.openFd("model.tflite").fileDescriptor
+        val inputStream = FileInputStream(fileDescriptor)
+        val fileChannel = inputStream.channel
+        val startOffset = fileDescriptor.startOffset
+        val declaredLength = fileDescriptor.declaredLength
+        val interpreter = Interpreter(loadModelFile())
+        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
+    }
+    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
+        val byteBuffer = ByteBuffer.allocateDirect(inputWidth * inputHeight * inputChannels * 4) // Adjust based on your model's input requirements
+        byteBuffer.order(ByteOrder.nativeOrder())
+        val intValues = IntArray(inputWidth * inputHeight)
+
+        bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
+        var pixel = 0
+        for (i in 0 until inputWidth) {
+            for (j in 0 until inputHeight) {
+                val value = intValues[pixel++]
+                byteBuffer.putFloat((value shr 16 and 0xFF) / 255.0f)
+                byteBuffer.putFloat((value shr 8 and 0xFF) / 255.0f)
+                byteBuffer.putFloat((value and 0xFF) / 255.0f)
+            }
+        }
+        return byteBuffer
+    }
+    private fun displayRecognizedName(name: String) {
+        runOnUiThread {
+            textView.text = name
+        }
+    }
+
+    private fun detectFaces(image: Mat): List<Rect> {
+        val cascadeClassifier = CascadeClassifier(
+            CascadeClassifier.CASCADE_FRONTALFACE_ALT2
+        )
+        val gray = Mat()
+        Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGBA2GRAY)
+        cascadeClassifier.detectMultiScale(
+            gray, faces, scaleFactor, minNeighbors, 0,
+            Size(faceSize.toDouble(), faceSize.toDouble()), Size()
+        )
+        return faces.toList()
+    }
+
+
     private fun allPermissionsGranted() = REQUIRED_PERMISSIONS.all {
         ContextCompat.checkSelfPermission(
             baseContext, it
