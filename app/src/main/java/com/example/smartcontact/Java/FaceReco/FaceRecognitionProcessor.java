@@ -10,6 +10,11 @@ import android.text.Editable;
 import android.util.Log;
 import android.util.Pair;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.OptIn;
 import androidx.camera.core.ExperimentalGetImage;
@@ -44,7 +49,50 @@ import java.util.List;
 
 
 public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
+    public class ImageConverter {
+        public static float[] convertImageToFloatArray(String imageUrl) {
+            try {
 
+                URL url = new URL(imageUrl);
+                Log.d("hmmed url is :",String.valueOf(url));
+                HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                connection.setDoInput(true);
+                connection.connect();
+                InputStream input = connection.getInputStream();
+                Log.d("hmmed this is the input",String.valueOf(input));
+
+                Bitmap bitmap = BitmapFactory.decodeStream(input);
+                Log.d("hmmed this is the bitmap",String.valueOf(bitmap));
+
+                int width = bitmap.getWidth();
+                int height = bitmap.getHeight();
+
+                int[] pixels = new int[width * height];
+                bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+                float[] floatArray = new float[width * height];
+
+                for (int i = 0; i < pixels.length; i++) {
+                    int pixel = pixels[i];
+                    floatArray[i] = convertPixelToFloat(pixel);
+                }
+
+
+                return floatArray;
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            return null;
+        }
+
+        private static float convertPixelToFloat(int pixel) {
+            // Convert pixel to float value
+            // You can implement your own conversion logic here
+            // This is just a placeholder implementation
+            return (float) (pixel & 0xFF) / 255.0f;
+        }
+    }
     class Person {
         public String name;
         public float[] faceVector;
@@ -70,10 +118,10 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     private final ImageProcessor faceNetImageProcessor;
     private final GraphicOverlay graphicOverlay;
     private final FaceRecognitionCallback callback;
-
     public FaceRecognitionActivity activity;
 
     List<Person> recognisedFaceList = new ArrayList();
+    public static String fullname;
 
     public FaceRecognitionProcessor(Interpreter faceNetModelInterpreter,
                                     GraphicOverlay graphicOverlay,
@@ -148,6 +196,8 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
                                     if (result.second < 1.0f) {
                                         faceGraphic.name = result.first;
                                         callback.onFaceRecognised(face, result.second, result.first);
+                                        Log.d(TAG, "face found, name ha: " + String.valueOf(faceGraphic.name));
+                                        fullname=String.valueOf(faceGraphic.name);
                                     }
                                 }
                             }
@@ -222,50 +272,7 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
     }
     public void url2Float(String url) {
-        new AsyncTask<String, Void, float[]>() {
-            @Override
-            protected float[] doInBackground(String... urls) {
-                String imageUrl = urls[0];
-                try {
-                    URL url = new URL(imageUrl);
-                    Bitmap bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+        String imageUrl = "https://drive.google.com/uc?id=1oM3HzK_pXXJcLVldUmi4_d61HHy0MqMg";
 
-                    // Convert the bitmap to a float array
-                    int width = bitmap.getWidth();
-                    int height = bitmap.getHeight();
-                    int[] pixels = new int[width * height];
-                    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
-
-                    float[] floatArray = new float[width * height * 3]; // Assuming RGB image
-
-                    // Normalize pixel values and store in float array
-                    for (int i = 0; i < pixels.length; i++) {
-                        int pixel = pixels[i];
-                        float red = Color.red(pixel) / 255.0f;
-                        float green = Color.green(pixel) / 255.0f;
-                        float blue = Color.blue(pixel) / 255.0f;
-
-                        floatArray[i * 3] = red;
-                        floatArray[i * 3 + 1] = green;
-                        floatArray[i * 3 + 2] = blue;
-                    }
-
-                    return floatArray;
-
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(float[] result) {
-                // Use the float array here
-                if (result != null) {
-                    // Do something with the float array
-                }
-            }
-        }.execute(url);
     }
 }

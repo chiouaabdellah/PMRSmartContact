@@ -6,6 +6,13 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import androidx.appcompat.app.AlertDialog;
+import android.view.LayoutInflater;
+import android.content.DialogInterface;
+import android.text.Editable;
+import android.widget.EditText;
+import com.example.smartcontact.Java.FaceReco.FaceRecognitionProcessor.ImageConverter;
+
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -118,8 +125,11 @@ public class FaceRecognitionActivity extends MLVideoHelperActivity implements Fa
         });
         mQueue.add(request);
     }
-
     public void onSelectProfilClicked(View view) {
+        //String imageUrl = "https://drive.google.com/uc?id=1oM3HzK_pXXJcLVldUmi4_d61HHy0MqMg";
+
+        //float[] image=ImageConverter.convertImageToFloatArray(imageUrl);
+        //faceRecognitionProcessor.ajouterprofile("oussama",image);
         Intent i = new Intent(getApplicationContext(), ProfilActivity.class);
         String variableValue = "Hello from Java!";
         i.putExtra("fullName", variableValue);
@@ -130,12 +140,30 @@ public class FaceRecognitionActivity extends MLVideoHelperActivity implements Fa
     @Override
     public void onAddFaceClicked(View view) {
         super.onAddFaceClicked(view);
-        mQueue = Volley.newRequestQueue(this);
-        jsonParse();
-        Intent i = new Intent(getApplicationContext(), ProfilActivity.class);
-        String variableValue = "Hello from Java!";
-        i.putExtra("fullName", variableValue);
-        i.putExtra("id", variableValue);
-        startActivity(i);
+
+        if (face == null || faceBitmap == null) {
+            return;
+        }
+
+        Face tempFace = face;
+        Bitmap tempBitmap = faceBitmap;
+        float[] tempVector = faceVector;
+
+        LayoutInflater inflater = LayoutInflater.from(this);
+        View dialogView = inflater.inflate(R.layout.add_face_dialog, null);
+        ((ImageView) dialogView.findViewById(R.id.dlg_image)).setImageBitmap(tempBitmap);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setView(dialogView);
+        builder.setPositiveButton("Save", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Editable input  = ((EditText) dialogView.findViewById(R.id.dlg_input)).getEditableText();
+                if (input.length() > 0) {
+                    faceRecognitionProcessor.registerFace(input, tempVector);
+                }
+            }
+        });
+        builder.show();
     }
 }

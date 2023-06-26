@@ -121,7 +121,7 @@ class ConversationActivity : AppCompatActivity() {
 
 
         //receive data
-        title = "Presenter"
+        title = intent.getStringExtra("name")
         content = findViewById<TextView>(R.id.tv_text).text.toString()
         docId = intent.getStringExtra("docId")
 

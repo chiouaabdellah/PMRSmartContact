@@ -25,7 +25,6 @@ import com.example.smartcontact.R
 import com.google.firebase.auth.FirebaseAuth
 
 class ProfilActivity : AppCompatActivity() {
-
     lateinit var readProgressLayout: RelativeLayout
     lateinit var readProgressBar: ProgressBar
     lateinit var recyclerView: RecyclerView
@@ -46,15 +45,7 @@ class ProfilActivity : AppCompatActivity() {
         menuBtn.setOnClickListener { v: View? -> showMenu() }
 
         //creation de button select Profil
-        val button_startconversation = findViewById<Button>(R.id.button_StartConversation)
-        button_startconversation.setOnClickListener {
-            //Implementer la partie de traduction
 
-            // cette partie va
-            val intent = Intent(this, ConversationActivity::class.java)
-            startActivity(intent)
-        }
-        var fullname = intent.getStringExtra("fullName").toString()
         // Use the variableValue as needed
         //cette partie permet l'affichage de profil avec des requettes Volley :
         readProgressLayout = findViewById(R.id.readProgressLayout)
@@ -101,8 +92,17 @@ class ProfilActivity : AppCompatActivity() {
             }
         }
         queue.add(jsonObjectRequest)
+        val button_startconversation = findViewById<Button>(R.id.button_StartConversation)
+        button_startconversation.setOnClickListener {
+            //Implementer la partie de traduction
 
+            // cette partie va
+            val intent = Intent(this, ConversationActivity::class.java)
+
+            startActivity(intent)
+        }
     }
+
     fun showMenu() {
         val popupMenu = PopupMenu(this@ProfilActivity, menuBtn)
         popupMenu.menu.add("Logout")
