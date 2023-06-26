@@ -3,6 +3,7 @@ package com.example.smartcontact.Kotlin
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -30,6 +31,7 @@ class ProfilActivity : AppCompatActivity() {
     lateinit var recyclerView: RecyclerView
     lateinit var layoutManager: LinearLayoutManager
     lateinit var recyclerAdapter: ReadRecyclerAdapter
+    private val TAG = "ProfilActivity"
 
     // il faut adapter cette partie avec le ID reconnue avec faceRecognition
     private val id = "ID1" // Replace "123" with the desired ID
@@ -52,7 +54,8 @@ class ProfilActivity : AppCompatActivity() {
             val intent = Intent(this, ConversationActivity::class.java)
             startActivity(intent)
         }
-
+        var fullname = intent.getStringExtra("fullName").toString()
+        // Use the variableValue as needed
         //cette partie permet l'affichage de profil avec des requettes Volley :
         readProgressLayout = findViewById(R.id.readProgressLayout)
         readProgressBar = findViewById(R.id.readProgressBar)
@@ -62,7 +65,7 @@ class ProfilActivity : AppCompatActivity() {
         val profilList = arrayListOf<Profil>()
 
         val queue = Volley.newRequestQueue(this)
-        val url = "https://script.google.com/macros/s/AKfycbw0OZxbOYmeILhlXo1jNCONbD3kav7T8gOsGh6ZnJNCCS9DnU0bvKXaeoIXu9GaJ6Vq/exec"
+        val url = "https://script.google.com/macros/s/AKfycbyOauyOTtik_WUcjjfHclWSE-0JooIPSM4nxzNIt70LhOcADewzH86vwj1yqNwBQxQ8/exec"
         val jsonObjectRequest = object : JsonObjectRequest(
             Request.Method.GET, url, null,
             Response.Listener {

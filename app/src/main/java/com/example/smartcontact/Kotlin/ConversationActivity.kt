@@ -1,8 +1,8 @@
 package com.example.smartcontact.Kotlin
 
 
-//importation des packages de traduction
 
+//importation des packages de traduction
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
@@ -136,7 +136,7 @@ class ConversationActivity : AppCompatActivity() {
 
             title = "Presenter"
             content = findViewById<TextView>(R.id.tv_text).text.toString()
-            //content   = Text2Summary.summarize( content_ , compressionRate = 0.3F)
+            
             docId = intent.getStringExtra("docId")
             //Implementer la partie envoi de conversation
             saveNote()
@@ -162,7 +162,7 @@ class ConversationActivity : AppCompatActivity() {
         saveNoteToFirebase(note)
     }
 
-    fun saveNoteToFirebase(note: Note?) {
+     fun saveNoteToFirebase(note: Note?) {
 
 
         val currentUser = FirebaseAuth.getInstance().currentUser
@@ -170,6 +170,25 @@ class ConversationActivity : AppCompatActivity() {
             .document(currentUser!!.uid).collection("my_notes")
 
 
+        val documentReference: DocumentReference
+        documentReference = collection.document()
+
+        documentReference.set(note!!).addOnCompleteListener { task ->
+            if (task.isSuccessful) {
+                //note is added
+                Toast.makeText(this, "Note Added succesfully", Toast.LENGTH_SHORT).show()
+            }
+
+
+        }
+    }
+
+/*
+    fun saveNoteToFirebase(note: Note?) {
+
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        val collection =  FirebaseFirestore.getInstance().collection("notes")
+            .document(currentUser!!.uid).collection("my_notes")
         val documentReference: DocumentReference
         documentReference = collection.document(docId.toString())
 
@@ -183,26 +202,7 @@ class ConversationActivity : AppCompatActivity() {
         }
     }
 
-    /*
-        fun saveNoteToFirebase(note: Note?) {
-
-            val currentUser = FirebaseAuth.getInstance().currentUser
-            val collection =  FirebaseFirestore.getInstance().collection("notes")
-                .document(currentUser!!.uid).collection("my_notes")
-            val documentReference: DocumentReference
-            documentReference = collection.document(docId.toString())
-
-            documentReference.set(note!!).addOnCompleteListener { task ->
-                if (task.isSuccessful) {
-                    //note is added
-                    Toast.makeText(this, "Note Added succesfully", Toast.LENGTH_SHORT).show()
-                }
-
-
-            }
-        }
-
-     */
+ */
 
 
 
