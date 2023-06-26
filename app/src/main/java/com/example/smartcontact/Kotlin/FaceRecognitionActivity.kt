@@ -1,5 +1,6 @@
 package com.example.smartcontact.Kotlin
 
+
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -27,8 +28,7 @@ import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.view.PreviewView
-import androidx.room.jarjarred.org.stringtemplate.v4.Interpreter
-import org.opencv.android.OpenCVLoader
+
 import java.io.File
 import java.io.FileInputStream
 import java.nio.ByteBuffer
@@ -56,7 +56,6 @@ class   FaceRecognitionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_face_recognition)
-        OpenCVLoader.initDebug()
         if (allPermissionsGranted()) {
             startCamera()
         } else {
@@ -131,50 +130,6 @@ class   FaceRecognitionActivity : AppCompatActivity() {
                 else -> false
             }
         }
-    }
-    private fun loadModelFile(): ByteBuffer {
-        val fileDescriptor = assets.openFd("model.tflite").fileDescriptor
-        val inputStream = FileInputStream(fileDescriptor)
-        val fileChannel = inputStream.channel
-        val startOffset = fileDescriptor.startOffset
-        val declaredLength = fileDescriptor.declaredLength
-        val interpreter = Interpreter(loadModelFile())
-        return fileChannel.map(FileChannel.MapMode.READ_ONLY, startOffset, declaredLength)
-    }
-    private fun convertBitmapToByteBuffer(bitmap: Bitmap): ByteBuffer {
-        val byteBuffer = ByteBuffer.allocateDirect(inputWidth * inputHeight * inputChannels * 4) // Adjust based on your model's input requirements
-        byteBuffer.order(ByteOrder.nativeOrder())
-        val intValues = IntArray(inputWidth * inputHeight)
-
-        bitmap.getPixels(intValues, 0, bitmap.width, 0, 0, bitmap.width, bitmap.height)
-        var pixel = 0
-        for (i in 0 until inputWidth) {
-            for (j in 0 until inputHeight) {
-                val value = intValues[pixel++]
-                byteBuffer.putFloat((value shr 16 and 0xFF) / 255.0f)
-                byteBuffer.putFloat((value shr 8 and 0xFF) / 255.0f)
-                byteBuffer.putFloat((value and 0xFF) / 255.0f)
-            }
-        }
-        return byteBuffer
-    }
-    private fun displayRecognizedName(name: String) {
-        runOnUiThread {
-            textView.text = name
-        }
-    }
-
-    private fun detectFaces(image: Mat): List<Rect> {
-        val cascadeClassifier = CascadeClassifier(
-            CascadeClassifier.CASCADE_FRONTALFACE_ALT2
-        )
-        val gray = Mat()
-        Imgproc.cvtColor(image, gray, Imgproc.COLOR_RGBA2GRAY)
-        cascadeClassifier.detectMultiScale(
-            gray, faces, scaleFactor, minNeighbors, 0,
-            Size(faceSize.toDouble(), faceSize.toDouble()), Size()
-        )
-        return faces.toList()
     }
 
 

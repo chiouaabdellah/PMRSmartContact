@@ -15,5 +15,3 @@ dependencyResolutionManagement {
 }
 rootProject.name = "SmartContact"
 include ':app'
-include ':opencv'
-include ':opencv'

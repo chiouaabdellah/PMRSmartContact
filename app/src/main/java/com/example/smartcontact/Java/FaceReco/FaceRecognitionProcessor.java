@@ -1,8 +1,11 @@
 package com.example.smartcontact.Java.FaceReco;
 
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Rect;
+import android.os.AsyncTask;
 import android.text.Editable;
 import android.util.Log;
 import android.util.Pair;
@@ -13,6 +16,7 @@ import androidx.camera.core.ExperimentalGetImage;
 import androidx.camera.core.ImageProxy;
 
 import com.example.smartcontact.Java.FaceReco.graphics.GraphicOverlay;
+import com.google.android.engage.common.datamodel.Image;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
@@ -28,10 +32,16 @@ import org.tensorflow.lite.support.image.ImageProcessor;
 import org.tensorflow.lite.support.image.TensorImage;
 import org.tensorflow.lite.support.image.ops.ResizeOp;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+
+
 
 public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
 
@@ -206,5 +216,56 @@ public class FaceRecognitionProcessor extends VisionBaseProcessor<List<Face>> {
     // Register a name against the vector
     public void registerFace(Editable input, float[] tempVector) {
         recognisedFaceList.add(new Person(input.toString(), tempVector));
+    }
+    public void ajouterprofile(String fullName, float[] tempVector){
+        recognisedFaceList.add(new Person(fullName.toString(), tempVector));
+
+    }
+    public void url2Float(String url) {
+        new AsyncTask<String, Void, float[]>() {
+            @Override
+            protected float[] doInBackground(String... urls) {
+                String imageUrl = urls[0];
+                try {
+                    URL url = new URL(imageUrl);
+                    Bitmap bitmap = BitmapFactory.decodeStream(url.openConnection().getInputStream());
+
+                    // Convert the bitmap to a float array
+                    int width = bitmap.getWidth();
+                    int height = bitmap.getHeight();
+                    int[] pixels = new int[width * height];
+                    bitmap.getPixels(pixels, 0, width, 0, 0, width, height);
+
+                    float[] floatArray = new float[width * height * 3]; // Assuming RGB image
+
+                    // Normalize pixel values and store in float array
+                    for (int i = 0; i < pixels.length; i++) {
+                        int pixel = pixels[i];
+                        float red = Color.red(pixel) / 255.0f;
+                        float green = Color.green(pixel) / 255.0f;
+                        float blue = Color.blue(pixel) / 255.0f;
+
+                        floatArray[i * 3] = red;
+                        floatArray[i * 3 + 1] = green;
+                        floatArray[i * 3 + 2] = blue;
+                    }
+
+                    return floatArray;
+
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
+                return null;
+            }
+
+            @Override
+            protected void onPostExecute(float[] result) {
+                // Use the float array here
+                if (result != null) {
+                    // Do something with the float array
+                }
+            }
+        }.execute(url);
     }
 }

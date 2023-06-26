@@ -1,39 +1,34 @@
 package com.example.smartcontact.Java.FaceReco;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.os.Bundle;
-import android.text.Editable;
-import android.util.Pair;
-import android.view.LayoutInflater;
+import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.ImageView;
 
-import androidx.appcompat.app.AlertDialog;
-
 import com.android.volley.Request;
+import com.android.volley.RequestQueue;
 import com.android.volley.Response;
 import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonObjectRequest;
+import com.android.volley.toolbox.Volley;
 import com.example.smartcontact.Kotlin.ProfilActivity;
 import com.example.smartcontact.R;
 import com.google.mlkit.vision.face.Face;
 
 import org.json.JSONArray;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.tensorflow.lite.Interpreter;
 import org.tensorflow.lite.support.common.FileUtil;
-
-
 import java.io.IOException;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+
 public class FaceRecognitionActivity extends MLVideoHelperActivity implements FaceRecognitionProcessor.FaceRecognitionCallback {
-    private static final Logger logger = Logger.getLogger(Example.class.getName());
+
 
     private Interpreter faceNetInterpreter;
     private FaceRecognitionProcessor faceRecognitionProcessor;
@@ -41,6 +36,8 @@ public class FaceRecognitionActivity extends MLVideoHelperActivity implements Fa
     private Face face;
     private Bitmap faceBitmap;
     private float[] faceVector;
+    private RequestQueue mQueue;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -85,23 +82,28 @@ public class FaceRecognitionActivity extends MLVideoHelperActivity implements Fa
     }
 
     private void jsonParse() {
+        Log.d("FaceRecognition Activity","Hello activity");
         System.out.print("start activity1");
+
 
         String url = "https://script.google.com/macros/s/AKfycbyOauyOTtik_WUcjjfHclWSE-0JooIPSM4nxzNIt70LhOcADewzH86vwj1yqNwBQxQ8/exec";
         JsonObjectRequest request = new JsonObjectRequest(Request.Method.GET, url, null, new Response.Listener<JSONObject>() {
 
             @Override
             public void onResponse(JSONObject response) {
-                logger.log("start activity");
                 try {
+
                     JSONArray jsonArray = response.getJSONArray("profilList");
-                    for (int i = 0; i > jsonArray.length(); i++) {
+                    //Log.d("FaceRecognition Activity","IDK HELLO " +String.valueOf(jsonArray.length()));
+                    for (int i = 0; i < jsonArray.length(); i++) {
                         JSONObject user = jsonArray.getJSONObject(i);
-                        String fullname = user.getString("fullName");
-                        String Photo = user.getString("Photo");
-                        System.out.println(Photo + fullname);
-
-
+                        Gson gson = new Gson();
+                        JsonObject jsonObject = gson.fromJson(String.valueOf(user), JsonObject.class);
+                        String fullName = jsonObject.get("fullName").getAsString();
+                        String photo = jsonObject.get("Photo").getAsString();
+//                        if (photo.length() > 0) {
+//                            url2Float(String.valueOf(photo));
+//                        }
                     }
                 } catch (JSONException e) {
                     throw new RuntimeException(e);
@@ -114,6 +116,7 @@ public class FaceRecognitionActivity extends MLVideoHelperActivity implements Fa
 
             }
         });
+        mQueue.add(request);
     }
 
     public void onSelectProfilClicked(View view) {
@@ -127,6 +130,7 @@ public class FaceRecognitionActivity extends MLVideoHelperActivity implements Fa
     @Override
     public void onAddFaceClicked(View view) {
         super.onAddFaceClicked(view);
+        mQueue = Volley.newRequestQueue(this);
         jsonParse();
         Intent i = new Intent(getApplicationContext(), ProfilActivity.class);
         String variableValue = "Hello from Java!";
