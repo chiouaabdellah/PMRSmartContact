@@ -11,10 +11,15 @@ import com.example.smartcontact.Java.ListSummaries
 import com.example.smartcontact.Java.LoginActivity
 import com.example.smartcontact.R
 import com.google.firebase.auth.FirebaseAuth
+import com.example.smartcontact.Java.FaceReco.FaceRecognitionActivity
+
 
 class MainActivity : AppCompatActivity() {
     //Toolbar as smartcontract
-
+    class Algo(val imageResourceId: Int, val title: String, val activityClass: Class<*>) {
+        // Additional properties and functions can be added here
+    }
+    val arrayList = ArrayList<Algo>()
     lateinit var menuBtn: ImageButton
     //onCreatefunction
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -30,12 +35,13 @@ class MainActivity : AppCompatActivity() {
         //Création de button qui lance SummariesActivity
         val button_savedSummaries = findViewById<Button>(R.id.button_Summaries)
         button_savedSummaries.setOnClickListener {
-            val intent = Intent(this, ListSummaries::class.java)
-            startActivity(intent)
+            val intent2 = Intent(this, ListSummaries::class.java)
+            startActivity(intent2)
         }
+
         val button_startFacerecognition = findViewById<Button>(R.id.button_FaceRecognition)
         button_startFacerecognition.setOnClickListener {
-            val intent = Intent(this, FaceRecognitionActivity::class.java)
+            val intent = Intent(this, com.example.smartcontact.Java.FaceReco.FaceRecognitionActivity::class.java)
             startActivity(intent)
         }
     }

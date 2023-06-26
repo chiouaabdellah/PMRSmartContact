@@ -4,6 +4,7 @@
 
 <!--    ajouter des permissions pour utilisation de microphone-->
 
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="andriod.permission.INTERNET"/>
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.CAMERA"/>
@@ -56,6 +57,8 @@
         <activity
             android:name=".Java.ListSummaries"
             android:exported="false" />
+        <activity android:name=".Java.FaceReco.FaceRecognitionActivity"
+            android:screenOrientation="userPortrait" />
         <activity
             android:name=".Java.SplashActivity"
             android:exported="true">
